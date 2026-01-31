@@ -1,0 +1,9 @@
+
+
+{
+  "intent": "battery swap",
+  "confidence": 0.95,
+  "response": "To swap your battery, please visit our nearest station. You can find the nearest station by using our mobile app or by visiting our website. Once you arrive at the station, our team will assist you with the swap process.",
+  "language": "English",
+  "escalate": false
+}
