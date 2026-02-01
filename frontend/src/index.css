@@ -1,10 +1,14 @@
 :root {
-  --bg-color: #0f172a;
-  --text-color: #f8fafc;
-  --primary-color: #38bdf8;
-  --secondary-color: #818cf8;
-  --glass-bg: rgba(255, 255, 255, 0.05);
+  --bg-color: #050505;
+  --card-bg: #0a0a0a;
+  --text-color: #ffffff;
+  --text-secondary: #a1a1aa;
+  --primary-color: #22c55e;
+  /* Green */
+  --primary-gradient: linear-gradient(90deg, #4ade80, #22c55e);
+  --glass-bg: rgba(20, 20, 20, 0.8);
   --glass-border: rgba(255, 255, 255, 0.1);
+  --input-bg: #171717;
   --card-radius: 16px;
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
@@ -12,7 +16,11 @@
 body {
   margin: 0;
   font-family: var(--font-family);
-  background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+  background-color: var(--bg-color);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
   color: var(--text-color);
   min-height: 100vh;
   display: flex;
@@ -22,61 +30,102 @@ body {
 
 #root {
   width: 100%;
-  max-width: 600px;
+  max-width: 500px;
+  /* Slightly narrower for mobile look */
   padding: 20px;
 }
 
 .card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
+  background: var(--card-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--card-radius);
   padding: 30px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  animation: fadeIn 0.5s ease-out;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.4s ease-out;
+  position: relative;
+  overflow: hidden;
 }
 
-h1, h2 {
-  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+h1,
+h2 {
+  color: var(--text-color);
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
   margin-top: 0;
+  font-weight: 600;
+  text-align: center;
 }
 
-input, button {
+input,
+button,
+select {
   width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 8px;
+  padding: 14px;
+  margin: 12px 0;
+  border-radius: 12px;
   border: 1px solid var(--glass-border);
   font-size: 16px;
-  transition: all 0.3s ease;
-  box-sizing: border-box; 
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-family: var(--font-family);
 }
 
-input {
-  background: rgba(0, 0, 0, 0.2);
+input,
+select {
+  background: var(--input-bg);
   color: white;
 }
 
-input:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+/* Specific style for disabled input to match "transparent number" look */
+input:disabled {
+  background: #27272a;
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  border-color: transparent;
 }
 
 button {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: var(--primary-gradient);
   color: #000;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
   border: none;
+  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+  filter: brightness(1.05);
+}
+
+button.secondary {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text-color);
+  box-shadow: none;
+}
+
+button.secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+label {
+  display: block;
+  font-size: 0.9em;
+  color: var(--text-color);
+  font-weight: 500;
+  margin-bottom: -4px;
+  margin-top: 10px;
 }
 
 /* Chat Styles */
@@ -103,7 +152,8 @@ button:hover {
 
 .user-msg {
   background: rgba(56, 189, 248, 0.2);
-  align-self: flex-end; /* Note: Flex direction needed on parent */
+  align-self: flex-end;
+  /* Note: Flex direction needed on parent */
   margin-left: auto;
   border-bottom-right-radius: 2px;
 }
@@ -117,7 +167,7 @@ button:hover {
 
 .intent-badge {
   font-size: 0.8em;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   padding: 2px 6px;
   border-radius: 4px;
   margin-left: 8px;
@@ -142,18 +192,28 @@ button:hover {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: transparent; 
+  background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1); 
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2); 
+  background: rgba(255, 255, 255, 0.2);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -23,7 +23,7 @@ const AgentChat = () => {
 
     const fetchHistory = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/chat/history/${driverId}`)
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/chat/history/${driverId}`)
             setMessages(response.data)
         } catch (err) {
             console.error("Failed to fetch history:", err)
@@ -41,7 +41,7 @@ const AgentChat = () => {
         setMessages(prev => [...prev, { sender: 'agent', text: text, timestamp: new Date().toISOString() }])
 
         try {
-            await axios.post('http://localhost:8000/agent/message', {
+            await axios.post(`${import.meta.env.VITE_API_URL}/agent/message`, {
                 driver_id: driverId,
                 message: text
             })
@@ -69,7 +69,7 @@ const AgentChat = () => {
                     onClick={async () => {
                         if (confirm("End this chat session?")) {
                             try {
-                                await axios.post('http://localhost:8000/agent/resolve', { driver_id: driverId })
+                                await axios.post(`${import.meta.env.VITE_API_URL}/agent/resolve`, { driver_id: driverId })
                                 navigate('/agent')
                             } catch (e) {
                                 alert("Failed to end chat")

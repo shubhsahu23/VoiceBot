@@ -14,8 +14,7 @@ const ChatInterface = () => {
     const [input, setInput] = useState('')
     const [loading, setLoading] = useState(false)
     const [isListening, setIsListening] = useState(false)
-    const [sessionActive, setSessionActive] = useState(true)
-    const [startTime, setStartTime] = useState(Date.now())  // Track when this session started locally
+    const [startTime] = useState(Date.now())  // Track when this session started locally
     const messagesEndRef = useRef(null)
 
     if (!driverId) {
@@ -49,18 +48,11 @@ const ChatInterface = () => {
 
     useEffect(() => {
         scrollToBottom()
-    }, [messages, sessionActive])
-
-    const startNewChat = () => {
-        setStartTime(Date.now())
-        setSessionActive(true)
-        setMessages([{ role: 'bot', text: `Hello! I'm your assistant. How can I help you today?` }])
-        setInput('')
-    }
+    }, [messages])
 
     const sendMessage = async (e) => {
         e.preventDefault()
-        if (!input.trim() || !sessionActive) return
+        if (!input.trim()) return
 
         const userMsg = input
         setMessages(prev => [...prev, { role: 'user', text: userMsg }])
@@ -68,7 +60,7 @@ const ChatInterface = () => {
         setLoading(true)
 
         try {
-            const response = await axios.post('http://localhost:8000/chat', {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/chat`, {
                 message: userMsg,
                 driver_id: driverId
             })
@@ -115,11 +107,11 @@ const ChatInterface = () => {
 
     // Polling and History logic
     useEffect(() => {
-        if (!driverId || !sessionActive) return;
+        if (!driverId) return;
 
         const fetchHistory = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/chat/history/${driverId}`)
+                const response = await axios.get(`https://voicebot-0khz.onrender.com/chat/history/${driverId}`)
 
                 // Check if the chat was ended by agent
                 const lastMsg = response.data[response.data.length - 1]
@@ -135,7 +127,6 @@ const ChatInterface = () => {
                         }))
 
                     if (history.length > 0) setMessages(history)
-                    setSessionActive(false)
                     return
                 }
 
@@ -163,7 +154,7 @@ const ChatInterface = () => {
         fetchHistory()
         const interval = setInterval(fetchHistory, 3000)
         return () => clearInterval(interval)
-    }, [driverId, startTime, sessionActive])
+    }, [driverId, startTime])
 
 
     return (
@@ -198,33 +189,21 @@ const ChatInterface = () => {
 
                 {loading && <div className="message bot-msg">Thinking...</div>}
 
-                {!sessionActive && (
-                    <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                        <p style={{ opacity: 0.7 }}>This session has ended.</p>
-                        <button
-                            onClick={startNewChat}
-                            style={{ background: '#3b82f6', marginTop: '10px' }}
-                        >
-                            Start New Chat
-                        </button>
-                    </div>
-                )}
-
                 <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={sendMessage} className="input-area" style={{ opacity: sessionActive ? 1 : 0.5, pointerEvents: sessionActive ? 'auto' : 'none' }}>
+            <form onSubmit={sendMessage} className="input-area" style={{ opacity: 1, pointerEvents: 'auto' }}>
                 <input
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder={sessionActive ? "Type your question..." : "Chat ended"}
-                    disabled={loading || !sessionActive}
+                    placeholder="Type your question..."
+                    disabled={loading}
                 />
-                <button type="button" onClick={startListening} disabled={loading || !sessionActive} style={{ background: isListening ? '#ef4444' : '' }}>
+                <button type="button" onClick={startListening} disabled={loading} style={{ background: isListening ? '#ef4444' : '' }}>
                     {isListening ? '🛑' : '🎤'}
                 </button>
-                <button type="submit" disabled={loading || !sessionActive}>Send</button>
+                <button type="submit" disabled={loading}>Send</button>
             </form>
         </div>
     )

@@ -21,7 +21,7 @@ const AgentDashboard = () => {
 
     const fetchTickets = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/agent/escalations?status=${activeTab}`)
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/agent/escalations?status=${activeTab}`)
             setTickets(response.data)
             setLoading(false)
         } catch (err) {
@@ -30,36 +30,57 @@ const AgentDashboard = () => {
         }
     }
 
+    const handleAccept = async (ticketId, driverId) => {
+        try {
+            await axios.post(`${import.meta.env.VITE_API_URL}/agent/accept`, { ticket_id: ticketId })
+            navigate(`/agent/chat/${driverId}`)
+        } catch (err) {
+            console.error("Failed to accept ticket:", err)
+            alert("Failed to accept ticket")
+        }
+    }
+
     return (
         <div className="card" style={{ width: '1000px', maxWidth: '90%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ margin: 0 }}>🛡️ Agent Dashboard</h2>
+                <h2 style={{ margin: 0, textAlign: 'left' }}>🛡️ Agent Dashboard</h2>
                 <button
                     onClick={() => navigate('/')}
-                    style={{ width: 'auto', background: 'rgba(255,255,255,0.1)' }}
+                    className="secondary"
+                    style={{ width: 'auto' }}
                 >
                     Back to App
                 </button>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '15px' }}>
                 <button
                     onClick={() => { setActiveTab('OPEN'); setLoading(true); }}
                     style={{
-                        background: activeTab === 'OPEN' ? '#ef4444' : 'transparent',
-                        opacity: activeTab === 'OPEN' ? 1 : 0.6
+                        background: activeTab === 'OPEN' ? 'rgba(239, 68, 68, 0.2)' : 'transparent',
+                        color: activeTab === 'OPEN' ? '#ef4444' : 'var(--text-secondary)',
+                        border: activeTab === 'OPEN' ? '1px solid #ef4444' : '1px solid transparent',
+                        width: 'auto',
+                        padding: '8px 20px',
+                        marginTop: 0,
+                        boxShadow: 'none'
                     }}
                 >
-                    Open
+                    Open Tickets
                 </button>
                 <button
                     onClick={() => { setActiveTab('RESOLVED'); setLoading(true); }}
                     style={{
-                        background: activeTab === 'RESOLVED' ? '#22c55e' : 'transparent',
-                        opacity: activeTab === 'RESOLVED' ? 1 : 0.6
+                        background: activeTab === 'RESOLVED' ? 'rgba(34, 197, 94, 0.2)' : 'transparent',
+                        color: activeTab === 'RESOLVED' ? '#22c55e' : 'var(--text-secondary)',
+                        border: activeTab === 'RESOLVED' ? '1px solid #22c55e' : '1px solid transparent',
+                        width: 'auto',
+                        padding: '8px 20px',
+                        marginTop: 0,
+                        boxShadow: 'none'
                     }}
                 >
-                    Resolved
+                    Resolved History
                 </button>
             </div>
 
@@ -97,14 +118,9 @@ const AgentDashboard = () => {
                                 </p>
                                 <button
                                     style={{ marginTop: '15px', fontSize: '0.9em', background: activeTab === 'OPEN' ? '' : 'rgba(255,255,255,0.1)' }}
-                                    onClick={async () => {
+                                    onClick={() => {
                                         if (activeTab === 'OPEN') {
-                                            try {
-                                                await axios.post('http://localhost:8000/agent/accept', { ticket_id: ticket.id })
-                                                navigate(`/agent/chat/${ticket.driver_id}`)
-                                            } catch (err) {
-                                                alert("Failed to accept ticket")
-                                            }
+                                            handleAccept(ticket.id, ticket.driver_id)
                                         } else {
                                             navigate(`/agent/chat/${ticket.driver_id}`)
                                         }
