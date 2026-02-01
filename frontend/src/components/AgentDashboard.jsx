@@ -1,24 +1,27 @@
 
+import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-const AgentDashboard = ({ onBack }) => {
+const AgentDashboard = () => {
+    const navigate = useNavigate()
     const [tickets, setTickets] = useState([])
     const [loading, setLoading] = useState(true)
+    const [activeTab, setActiveTab] = useState('OPEN')
 
     useEffect(() => {
         fetchTickets()
-    }, [])
+    }, [activeTab])
 
     // Auto-refresh every 5 seconds
     useEffect(() => {
         const interval = setInterval(fetchTickets, 5000)
         return () => clearInterval(interval)
-    }, [])
+    }, [activeTab])
 
     const fetchTickets = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/agent/escalations')
+            const response = await axios.get(`http://localhost:8000/agent/escalations?status=${activeTab}`)
             setTickets(response.data)
             setLoading(false)
         } catch (err) {
@@ -32,10 +35,31 @@ const AgentDashboard = ({ onBack }) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h2 style={{ margin: 0 }}>🛡️ Agent Dashboard</h2>
                 <button
-                    onClick={onBack}
+                    onClick={() => navigate('/')}
                     style={{ width: 'auto', background: 'rgba(255,255,255,0.1)' }}
                 >
                     Back to App
+                </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+                <button
+                    onClick={() => { setActiveTab('OPEN'); setLoading(true); }}
+                    style={{
+                        background: activeTab === 'OPEN' ? '#ef4444' : 'transparent',
+                        opacity: activeTab === 'OPEN' ? 1 : 0.6
+                    }}
+                >
+                    Open
+                </button>
+                <button
+                    onClick={() => { setActiveTab('RESOLVED'); setLoading(true); }}
+                    style={{
+                        background: activeTab === 'RESOLVED' ? '#22c55e' : 'transparent',
+                        opacity: activeTab === 'RESOLVED' ? 1 : 0.6
+                    }}
+                >
+                    Resolved
                 </button>
             </div>
 
@@ -46,7 +70,7 @@ const AgentDashboard = ({ onBack }) => {
                     {tickets.length === 0 ? (
                         <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', opacity: 0.6 }}>
                             <h3>All clear!</h3>
-                            <p>No pending escalations.</p>
+                            <p>No {activeTab.toLowerCase()} escalations.</p>
                         </div>
                     ) : (
                         tickets.map(ticket => (
@@ -54,14 +78,14 @@ const AgentDashboard = ({ onBack }) => {
                                 background: 'rgba(255, 255, 255, 0.05)',
                                 padding: '20px',
                                 borderRadius: '12px',
-                                borderLeft: '4px solid #ef4444'
+                                borderLeft: `4px solid ${activeTab === 'OPEN' ? '#ef4444' : '#22c55e'}`
                             }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                     <span style={{ fontWeight: 'bold' }}>{ticket.driver_id}</span>
                                     <span style={{ fontSize: '0.8em', opacity: 0.6 }}>{new Date(ticket.created_at).toLocaleTimeString()}</span>
                                 </div>
                                 <div style={{ marginBottom: '10px' }}>
-                                    <span className="intent-badge" style={{ marginLeft: 0, background: '#ef4444', color: 'white' }}>
+                                    <span className="intent-badge" style={{ marginLeft: 0, background: activeTab === 'OPEN' ? '#ef4444' : '#22c55e', color: 'white' }}>
                                         {ticket.intent}
                                     </span>
                                     <span style={{ marginLeft: '10px', fontSize: '0.9em', opacity: 0.8 }}>
@@ -71,8 +95,22 @@ const AgentDashboard = ({ onBack }) => {
                                 <p style={{ fontSize: '0.9em', lineHeight: '1.4', opacity: 0.9, maxHeight: '100px', overflowY: 'auto' }}>
                                     "{ticket.summary}"
                                 </p>
-                                <button style={{ marginTop: '15px', fontSize: '0.9em' }}>
-                                    Take Action
+                                <button
+                                    style={{ marginTop: '15px', fontSize: '0.9em', background: activeTab === 'OPEN' ? '' : 'rgba(255,255,255,0.1)' }}
+                                    onClick={async () => {
+                                        if (activeTab === 'OPEN') {
+                                            try {
+                                                await axios.post('http://localhost:8000/agent/accept', { ticket_id: ticket.id })
+                                                navigate(`/agent/chat/${ticket.driver_id}`)
+                                            } catch (err) {
+                                                alert("Failed to accept ticket")
+                                            }
+                                        } else {
+                                            navigate(`/agent/chat/${ticket.driver_id}`)
+                                        }
+                                    }}
+                                >
+                                    {activeTab === 'OPEN' ? 'Take Action' : 'View Chat'}
                                 </button>
                             </div>
                         ))

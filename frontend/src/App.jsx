@@ -1,45 +1,20 @@
-
-import { useState } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import DriverLogin from './components/DriverLogin'
+import PhoneLogin from './components/PhoneLogin'
 import ChatInterface from './components/ChatInterface'
 import AgentDashboard from './components/AgentDashboard'
+import AgentChat from './components/AgentChat'
 
 function App() {
-  const [view, setView] = useState('login') // 'login', 'chat', 'agent'
-  const [driverId, setDriverId] = useState(null)
-
-  const handleDriverLogin = (id) => {
-    setDriverId(id)
-    setView('chat')
-  }
-
   return (
-    <>
-      {view === 'login' && (
-        <>
-          <DriverLogin onLogin={handleDriverLogin} />
-          <div style={{ position: 'fixed', bottom: '20px', right: '20px' }}>
-            <button
-              onClick={() => setView('agent')}
-              style={{ width: 'auto', fontSize: '0.8em', background: 'rgba(255,255,255,0.1)', padding: '8px 15px' }}
-            >
-              👮 Agent Portal
-            </button>
-          </div>
-        </>
-      )}
-
-      {view === 'chat' && (
-        <ChatInterface
-          driverId={driverId}
-          onLogout={() => { setDriverId(null); setView('login'); }}
-        />
-      )}
-
-      {view === 'agent' && (
-        <AgentDashboard onBack={() => setView('login')} />
-      )}
-    </>
+    <Routes>
+      <Route path="/" element={<DriverLogin />} />
+      <Route path="/phone" element={<PhoneLogin />} />
+      <Route path="/chat" element={<ChatInterface />} />
+      <Route path="/agent" element={<AgentDashboard />} />
+      <Route path="/agent/chat/:driverId" element={<AgentChat />} />
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   )
 }
 
